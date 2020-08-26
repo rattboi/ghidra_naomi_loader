@@ -1,4 +1,4 @@
-package segadreamcast;
+package seganaomi;
 
 import java.awt.Component;
 import java.awt.event.ItemEvent;
@@ -8,7 +8,7 @@ import javax.swing.JComboBox;
 
 import ghidra.app.util.Option;
 
-public class SegaDreamcastBaseChooser extends Option {
+public class SegaNaomiBaseChooser extends Option {
 	private String selected;
 	private String[] items = new String[] {
 			"0x8C000000",
@@ -17,7 +17,7 @@ public class SegaDreamcastBaseChooser extends Option {
 	
 	private JComboBox<String> editor = new JComboBox<>(items);
 
-	public SegaDreamcastBaseChooser(String name, Object value, Class<?> valueClass, String arg) {
+	public SegaNaomiBaseChooser(String name, Object value, Class<?> valueClass, String arg) {
 		super(name, valueClass, value, arg, null);
 		
 		selected = items[0];
@@ -28,7 +28,7 @@ public class SegaDreamcastBaseChooser extends Option {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 						selected = (String)e.getItem();
-						SegaDreamcastBaseChooser.super.setValue(selected);
+						SegaNaomiBaseChooser.super.setValue(selected);
 			       }
 			}
 			
@@ -44,7 +44,7 @@ public class SegaDreamcastBaseChooser extends Option {
 
 	@Override
 	public Option copy() {
-		return new SegaDreamcastBaseChooser(getName(), getValue(), getValueClass(), getArg());
+		return new SegaNaomiBaseChooser(getName(), getValue(), getValueClass(), getArg());
 	}
 
 	@Override

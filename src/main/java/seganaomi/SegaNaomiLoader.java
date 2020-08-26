@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package segadreamcast;
+package seganaomi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +41,7 @@ import ghidra.util.task.TaskMonitor;
 /**
  * TODO: Provide class-level documentation that describes what this loader does.
  */
-public class SegaDreamcastLoader extends AbstractLibrarySupportLoader {
+public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 
 	private static final long DEF_RAM_BASE = 0x8C000000L;
 	private static final long RAM_SIZE = 0x02000000L;
@@ -50,7 +50,7 @@ public class SegaDreamcastLoader extends AbstractLibrarySupportLoader {
 	
 	@Override
 	public String getName() {
-		return "Sega Dreamcast Loader";
+		return "Sega Naomi Loader";
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class SegaDreamcastLoader extends AbstractLibrarySupportLoader {
 		
 		List<Option> list = new ArrayList<>();
 		
-		list.add(new SegaDreamcastBaseChooser(OPTION_NAME, ramBase, SegaDreamcastBaseChooser.class, Loader.COMMAND_LINE_ARG_PREFIX + "-ramStart"));
+		list.add(new SegaNaomiBaseChooser(OPTION_NAME, ramBase, SegaNaomiBaseChooser.class, Loader.COMMAND_LINE_ARG_PREFIX + "-ramStart"));
 		
 		return list;
 	}
