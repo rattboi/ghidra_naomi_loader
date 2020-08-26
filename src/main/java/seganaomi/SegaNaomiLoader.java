@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 	private static final long RAM_SIZE = 0x02000000L;
 	private static final String OPTION_NAME = "RAM Base Address: ";
 	private static long ramBase = DEF_RAM_BASE;
-	
+
 	@Override
 	public String getName() {
 		return "Sega Naomi Loader";
@@ -58,9 +58,10 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		List<LoadSpec> loadSpecs = new ArrayList<>();
 
 		BinaryReader reader = new BinaryReader(provider, true);
-		
-		long size = reader.length();
-		if (size == 16 * 1024 * 1024 || size == 32 * 1024 * 1024) {
+
+		String s = reader.readAsciiString(0, 16);
+
+		if (s.equals("NAOMI")) {
 			loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair("SuperH4:LE:32:default", "default"), true));
 		}
 
@@ -71,18 +72,18 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program, TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
 		FlatProgramAPI fpa = new FlatProgramAPI(program);
 		createSegments(fpa, log);
-		
+
 		InputStream ramStream = provider.getInputStream(0L);
 		createSegment(fpa, ramStream, "RAM", ramBase, RAM_SIZE, true, true, log);
 	}
 
 	@Override
 	public List<Option> getDefaultOptions(ByteProvider provider, LoadSpec loadSpec,	DomainObject domainObject, boolean isLoadIntoProgram) {
-		
+
 		List<Option> list = new ArrayList<>();
-		
+
 		list.add(new SegaNaomiBaseChooser(OPTION_NAME, ramBase, SegaNaomiBaseChooser.class, Loader.COMMAND_LINE_ARG_PREFIX + "-ramStart"));
-		
+
 		return list;
 	}
 
@@ -98,7 +99,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 
 		return null;
 	}
-	
+
 	private static void createSegments(FlatProgramAPI fpa, MessageLog log) {
 		createCcrSegment(fpa, log);
 		createUbcSegment(fpa, log);
@@ -112,7 +113,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createScifSegment(fpa, log);
 		createHudiSegment(fpa, log);
 	}
-	
+
 	private static void createCcrSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "CCN", 0xFF000000L, 0x48, true, false, log);
 		createNamedDword(fpa, 0xFF000000L, "CCN_PTEH", "Page table entry high register", log);
@@ -132,7 +133,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedDword(fpa, 0xFF00003CL, "CCN_QACR1", "Queue address control register 1", log);
 		createNamedDword(fpa, 0xFF000044L, "CCN_PRR", "Product register", log);
 	}
-	
+
 	private static void createUbcSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "UBC", 0xFF200000L, 0x24, true, false, log);
 		createNamedDword(fpa, 0xFF200000L, "UBC_BARA", "Break address register A", log);
@@ -145,7 +146,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedDword(fpa, 0xFF20001CL, "UBC_BDMRB", "Break data mask register B", log);
 		createNamedWord(fpa, 0xFF200020L, "UBC_BRCR", "Break control register", log);
 	}
-	
+
 	private static void createBscSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "BSC", 0xFF800000L, 0x4C, true, false, log);
 		createNamedDword(fpa, 0xFF800000L, "BSC_BCR1", "Bus control register 1", log);
@@ -164,14 +165,14 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedDword(fpa, 0xFF800040L, "BSC_PCTRB", "Port control register B", log);
 		createNamedWord(fpa,  0xFF800044L, "BSC_PDTRB", "Port data register B", log);
 		createNamedWord(fpa,  0xFF800048L, "BSC_GPIOC", "GPIO interrupt control register", log);
-		
+
 		createSegment(fpa, null, "BSC_SDMR2", 0xFF900000L, 0x4, true, false, log);
 		createNamedDword(fpa, 0xFF900000L, "BSC_SDMR2", "Synchronous DRAM mode registers for area 2", log);
-		
+
 		createSegment(fpa, null, "BSC_SDMR2", 0xFF940000L, 0x4, true, false, log);
 		createNamedDword(fpa, 0xFF940000L, "BSC_SDMR3", "Synchronous DRAM mode registers for area 3", log);
 	}
-	
+
 	private static void createDmacSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "DMAC", 0xFFA00000L, 0x44, true, false, log);
 		createNamedDword(fpa, 0xFFA00000L, "DMAC_SAR0", "DMA source address register 0", log);
@@ -192,7 +193,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedDword(fpa, 0xFFA0003CL, "DMAC_CHCR3", "DMA channel control register 3", log);
 		createNamedDword(fpa, 0xFFA00040L, "DMAC_DMAOR", "DMA operation register", log);
 	}
-	
+
 	private static void createCpgSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "CPG", 0xFFC00000L, 0x14, true, false, log);
 		createNamedWord(fpa, 0xFFC00000L, "CPG_FRQCR", "Frequency control register", log);
@@ -201,7 +202,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedWord(fpa, 0xFFC0000CL, "CPG_WTCSR", "Watchdog timer control/status register", log);
 		createNamedByte(fpa, 0xFFC00010L, "CPG_STBCR2", "Standby control register 2", log);
 	}
-	
+
 	private static void createRtcSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "RTC", 0xFFC80000L, 0x40, true, false, log);
 		createNamedByte(fpa, 0xFFC80000L, "RTC_R64CNT", "64 Hz counter", log);
@@ -221,7 +222,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedByte(fpa, 0xFFC80038L, "RTC_RCR1", "RTC control register 1", log);
 		createNamedByte(fpa, 0xFFC8003CL, "RTC_RCR2", "RTC control register 2", log);
 	}
-	
+
 	private static void createIntcSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "INTC", 0xFFD00000L, 0x10, true, false, log);
 		createNamedWord(fpa, 0xFFD00000L, "INTC_ICR", "Interrupt control register", log);
@@ -229,7 +230,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedWord(fpa, 0xFFD00008L, "INTC_IPRB", "Interrupt priority register B", log);
 		createNamedWord(fpa, 0xFFD0000CL, "INTC_IPRC", "Interrupt priority register C", log);
 	}
-	
+
 	private static void createTmuSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "TMU", 0xFFD80000L, 0x30, true, false, log);
 		createNamedByte(fpa, 0xFFD80000L, "TMU_TOCR", "Timer output control register", log);
@@ -245,7 +246,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedWord(fpa, 0xFFD80028L, "TMU_TCR2", "Timer control register 2", log);
 		createNamedDword(fpa, 0xFFD8002CL, "TMU_TCPR2", "Input capture register", log);
 	}
-	
+
 	private static void createSciSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "SCI", 0xFFE00000L, 0x20, true, false, log);
 		createNamedByte(fpa, 0xFFE00000L, "SCI_SCSMR1", "Serial mode register", log);
@@ -257,7 +258,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedByte(fpa, 0xFFE00018L, "SCI_SCSCMR1", "Smart card mode register", log);
 		createNamedByte(fpa, 0xFFE0001CL, "SCI_SCSPTR1", "Serial port register", log);
 	}
-	
+
 	private static void createScifSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "SCIF", 0xFFE80000L, 0x28, true, false, log);
 		createNamedWord(fpa, 0xFFE80000L, "SCIF_SCSMR2", "Serial mode register", log);
@@ -271,23 +272,23 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 		createNamedWord(fpa, 0xFFE80020L, "SCIF_SCSPTR2", "Serial port register", log);
 		createNamedWord(fpa, 0xFFE80024L, "SCIF_SCLSR2", "Line status register", log);
 	}
-	
+
 	private static void createHudiSegment(FlatProgramAPI fpa, MessageLog log) {
 		createSegment(fpa, null, "HUDI", 0xFFF00000L, 0x0C, true, false, log);
 		createNamedWord(fpa, 0xFFF00000L, "HUDI_SDIR", "Instruction register", log);
 		createNamedDword(fpa, 0xFFF00008L, "HUDI_SDDR", "Data register", log);
 	}
-	
+
 	private static void createNamedByte(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
 		Address addr = fpa.toAddr(address);
-		
+
 		try {
 			fpa.createByte(addr);
 		} catch (Exception e) {
 			log.appendException(e);
 			return;
 		}
-		
+
 		try {
 			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
 			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
@@ -295,17 +296,17 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 			log.appendException(e);
 		}
 }
-	
+
 	private static void createNamedWord(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
 		Address addr = fpa.toAddr(address);
-		
+
 		try {
 			fpa.createWord(addr);
 		} catch (Exception e) {
 			log.appendException(e);
 			return;
 		}
-		
+
 		try {
 			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
 			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
@@ -313,17 +314,17 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 			log.appendException(e);
 		}
 }
-	
+
 	private static void createNamedDword(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
 		Address addr = fpa.toAddr(address);
-		
+
 		try {
 			fpa.createDWord(addr);
 		} catch (Exception e) {
 			log.appendException(e);
 			return;
 		}
-		
+
 		try {
 			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
 			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
@@ -331,7 +332,7 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 			log.appendException(e);
 		}
 	}
-	
+
 	private static void createSegment(FlatProgramAPI fpa, InputStream stream, String name, long address, long size, boolean write, boolean execute, MessageLog log) {
 		MemoryBlock block;
 		try {
