@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,5 +74,71 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 
 		InputStream ramStream = provider.getInputStream(0L);
 		createSegment(fpa, ramStream, "RAM", ramBase, RAM_SIZE, true, true, log);
+	}
+
+	private static void createNamedByte(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
+		Address addr = fpa.toAddr(address);
+
+		try {
+			fpa.createByte(addr);
+		} catch (Exception e) {
+			log.appendException(e);
+			return;
+		}
+
+		try {
+			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
+			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
+		} catch (InvalidInputException e) {
+			log.appendException(e);
+		}
+	}
+
+	private static void createNamedWord(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
+		Address addr = fpa.toAddr(address);
+
+		try {
+			fpa.createWord(addr);
+		} catch (Exception e) {
+			log.appendException(e);
+			return;
+		}
+
+		try {
+			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
+			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
+		} catch (InvalidInputException e) {
+			log.appendException(e);
+		}
+	}
+
+	private static void createNamedDword(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
+		Address addr = fpa.toAddr(address);
+
+		try {
+			fpa.createDWord(addr);
+		} catch (Exception e) {
+			log.appendException(e);
+			return;
+		}
+
+		try {
+			fpa.getCurrentProgram().getSymbolTable().createLabel(addr, name, SourceType.IMPORTED);
+			fpa.getCurrentProgram().getListing().setComment(addr, CodeUnit.REPEATABLE_COMMENT, comment);
+		} catch (InvalidInputException e) {
+			log.appendException(e);
+		}
+	}
+
+	private static void createSegment(FlatProgramAPI fpa, InputStream stream, String name, long address, long size, boolean write, boolean execute, MessageLog log) {
+		MemoryBlock block;
+		try {
+			block = fpa.createMemoryBlock(name, fpa.toAddr(address), stream, size, false);
+			block.setRead(true);
+			block.setWrite(write);
+			block.setExecute(execute);
+		} catch (Exception e) {
+			log.appendException(e);
+		}
 	}
 }
