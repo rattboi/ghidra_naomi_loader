@@ -1,2 +1,2 @@
-# ghidra_sdc_ldr
-Sega Dreamcast loader for GHIDRA
+# ghidra_naomi_loader
+Sega Naomi loader for GHIDRA
