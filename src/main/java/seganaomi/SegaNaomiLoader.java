@@ -72,8 +72,40 @@ public class SegaNaomiLoader extends AbstractLibrarySupportLoader {
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program, TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
 		FlatProgramAPI fpa = new FlatProgramAPI(program);
 
-		InputStream ramStream = provider.getInputStream(0L);
-		createSegment(fpa, ramStream, "RAM", ramBase, RAM_SIZE, true, true, log);
+		getNaomiLoadEntries(fpa, provider, log);
+
+		// createSegment(fpa, ramStream, "RAM", ramBase, RAM_SIZE, true, true, log);
+	}
+
+	private static void getNaomiLoadEntries(FlatProgramAPI fpa, ByteProvider provider, MessageLog log) {
+
+		BinaryReader reader = new BinaryReader(provider, true);
+		// jump to 0x360 (load entries)
+		reader.setPointerIndex(0x360L);
+
+		boolean moreEntries = true;
+		int numEntries = 1;
+
+		do {
+			try {
+				long romOffset	 = reader.readNextUnsignedInt();
+				long ramAddress  = reader.readNextUnsignedInt();
+				long entryLength = reader.readNextUnsignedInt();
+
+				if (entryLength == 0 || entryLength == 0xFFFFFFFFL)  {
+					moreEntries = false;
+				} else {
+					for (int i = 0; i < 8; i++) {
+						long logicalRamAddress = (i << 29) | ramAddress;
+						InputStream istream = reader.getByteProvider().getInputStream(romOffset);
+						createSegment(fpa, istream, "Game Entry (" + numEntries + ")(" + i + ")", logicalRamAddress, entryLength, true, true, log);
+					}
+					numEntries++;
+				}
+			} catch (Exception e) {
+				log.appendException(e);
+			}
+		} while (moreEntries == true);
 	}
 
 	private static void createNamedByte(FlatProgramAPI fpa, long address, String name, String comment, MessageLog log) {
